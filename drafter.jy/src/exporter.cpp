@@ -19,6 +19,7 @@ Exporter::~Exporter()
 	m_FlagTargetFileReflush = false;
 }
 
+
 void Exporter::SetSourceFilePath(const std::string& path)
 {
 	m_SourceFilePath = path;
@@ -31,6 +32,10 @@ void Exporter::SetTargetFilePath(const std::string& path)
 
 void Exporter::SetFlagHasTimeCode(bool flag)
 {
+	if (flag != m_FlagHasTimeCode && m_FlagIsAccessed) {
+		ResetSubtitle();
+		GenSubtitle();
+	}
 	m_FlagHasTimeCode = flag;
 }
 
@@ -42,6 +47,26 @@ void Exporter::SetTargetExt(const std::string& ext)
 void Exporter::SetFlagTargetFileForceOverride(bool flag)
 {
 	m_FlagTargetFileForceOverride = flag;
+}
+
+void Exporter::ResetSubtitle()
+{
+	std::vector<std::string>::iterator iter = m_Subtitle.begin();
+	for (; iter != m_Subtitle.end();)
+	{
+		iter = m_Subtitle.erase(iter);
+	}
+	m_BlockCount = 0;
+	m_Logs.push_back(GenCurrentDateTime() + u8" 当前字幕已清空");
+}
+
+void Exporter::ResetLogs()
+{
+	std::vector<std::string>::iterator iter = m_Logs.begin();
+	for (; iter != m_Logs.end();)
+	{
+		iter = m_Logs.erase(iter);
+	}
 }
 
 void Exporter::Validate()
@@ -88,58 +113,33 @@ void Exporter::DelTargetFile()
 
 bool Exporter::ExecExport()
 {
-	std::ofstream out;
-	out.open(m_TargetFilePath, std::ios::out|std::ios::trunc);
-	if (!out.is_open()) {
-		tmpStr.clear();
-		tmpStr = "转存文件打开异常[" + m_TargetFilePath + "]";
-		ERR_PRINT(tmpStr);
-		out.close(); return false;
-	}
-	m_FlagTargetFileReflush = true;
-	
-	std::ifstream source(m_SourceFilePath);
-
-	if (!m_JsonReader.parse(source, m_JsonData)) {
-		tmpStr.clear();
-		tmpStr = "草稿文件JSON解析异常[" + m_SourceFilePath + "]";
-		ERR_PRINT(tmpStr);
-		source.close(); 
-		out.close(); 
-		DelTargetFile();
+	std::ofstream target;
+	std::string targetFile = GetTargetFilePath();
+	target.open(targetFile, std::ios::out|std::ios::trunc);
+	if (!target.is_open()) {
+		m_Logs.push_back(GenCurrentDateTime() + u8" 导出路径打开异常[" + targetFile + "]");
+		target.close();
 		return false;
 	}
 
-	if (m_JsonData.empty() || !m_JsonData.isMember("materials") || !m_JsonData["materials"].isMember("texts") || !m_JsonData.isMember("tracks")) {
-		tmpStr.clear();
-		tmpStr = "草稿文件解析数据无相关索引, 暂定非法文件[" + m_SourceFilePath + "]";
-		ERR_PRINT(tmpStr);
-		source.close();
-		out.close();
-		DelTargetFile();
+	if (m_Subtitle.size() == 0) {
+		m_Logs.push_back(GenCurrentDateTime() + u8" 暂无生成字幕,");
+		target.close();
 		return false;
 	}
 
-	unsigned int count = m_JsonData["materials"]["texts"].size();
-	std::string timeStartSwap;
-	std::string timeEndSwap;
+	for (size_t i = 0; i < m_Subtitle.size(); i++) {
 
-	for (unsigned int i = 0; i < count; i++) {
-		m_BlockCount++;
-		std::string text = m_JsonData["materials"]["texts"][i]["content"].asString();
-		unsigned int start = m_JsonData["tracks"][1]["segments"][i]["target_timerange"]["start"].asInt();
-		unsigned int duration = m_JsonData["tracks"][1]["segments"][i]["target_timerange"]["duration"].asInt();
-		MicroS2Str(timeStartSwap, start);
-		MicroS2Str(timeEndSwap, start + duration);
-		out << m_BlockCount << std::endl
-			<< timeStartSwap << " --> " << timeEndSwap << std::endl
-			<< text << std::endl
-			<< std::endl;
+		if (m_Subtitle[i] == GetBlockSep()) {
+			target << std::endl;
+			continue;
+		}
+
+		target << m_Subtitle[i] << std::endl;
 	}
 
-	source.close();
-	out.close();
-
+	target.close();
+	m_Logs.push_back(GenCurrentDateTime() + u8" 导出字幕成功[" + targetFile + "]");
 	return true;
 }
 

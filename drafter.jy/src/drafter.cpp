@@ -57,49 +57,38 @@ namespace drafter {
 		ImGui::SameLine();
 		if (ImGui::RadioButton("srt", (int*)&m_FileType, (int)SRT)) {
 			m_Exporter.SetTargetExt("srt");
-			m_Exporter.SetFlagHasTimeCode(m_FileType == TXT_NO_TIME);
+			m_Exporter.SetFlagHasTimeCode(true);
 		}
 		ImGui::SameLine();
 		if (ImGui::RadioButton("txt", (int*)&m_FileType, (int)TXT)) {
 			m_Exporter.SetTargetExt("txt");
-			m_Exporter.SetFlagHasTimeCode(m_FileType == TXT_NO_TIME);
+			m_Exporter.SetFlagHasTimeCode(true);
 		}
 		ImGui::SameLine();
 		if (ImGui::RadioButton(u8"txt(无时间码)", (int*)&m_FileType, (int)TXT_NO_TIME)) {
 			m_Exporter.SetTargetExt("txt");
-			m_Exporter.SetFlagHasTimeCode(m_FileType == TXT_NO_TIME);
+			m_Exporter.SetFlagHasTimeCode(false);
 		}
 
 		ImGui::Spacing();
 		ImGui::Separator();
 		ImGui::Spacing();
 
-		ImGui::Text(u8"可选操作");
+		if (ImGui::Button(u8"清除日志")) {
+			m_Exporter.ResetLogs();
+		}
 		ImGui::SameLine();
 		if (ImGui::Button(u8"校验")) {
 			m_Exporter.Validate();
 		}
-		
 		ImGui::SameLine();
 		if (ImGui::Button(u8"重置")) {
+			m_Exporter.ResetSubtitle();
 			std::cout << "重置" << std::endl;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button(u8"生成")) {
-			if (m_Exporter.GenSubtitle()) {
-				std::vector<std::string> subtitle;
-				subtitle = m_Exporter.GetSubtitle();
-
-				for (size_t i = 0; i < subtitle.size(); i++)
-				{
-					if (subtitle[i] == m_Exporter.GetBlockSep()) {
-						std::cout << std::endl;
-						continue;
-					}
-					std::cout << subtitle[i] << std::endl;
-				}
-			}
-			
+			m_Exporter.GenSubtitle();
 			std::cout << "生成字幕" << std::endl;
 		}
 		ImGui::SameLine();
@@ -107,10 +96,9 @@ namespace drafter {
 			std::cout << "预览字幕" << std::endl;
 		}
 		ImGui::SameLine();
-		
 		if (ImGui::Button(u8"导出")) {
 			std::cout << "导出字幕" << std::endl;
-			//mExporter.ExecExport();
+			m_Exporter.ExecExport();
 		}
 
 		ImGui::Spacing();

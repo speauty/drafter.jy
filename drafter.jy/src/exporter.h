@@ -35,6 +35,8 @@ public:
 	void SetFlagHasTimeCode(bool flag);
 	void SetTargetExt(const std::string& ext);
 	void SetFlagTargetFileForceOverride(bool flag);
+	void ResetSubtitle();
+	void ResetLogs();
 	void Validate();
 	void DelTargetFile();
 	bool ExecExport();
