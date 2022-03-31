@@ -92,10 +92,6 @@ namespace drafter {
 			std::cout << "Éú³É×ÖÄ»" << std::endl;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(u8"Ô¤ÀÀ")) {
-			std::cout << "Ô¤ÀÀ×ÖÄ»" << std::endl;
-		}
-		ImGui::SameLine();
 		if (ImGui::Button(u8"µ¼³ö")) {
 			std::cout << "µ¼³ö×ÖÄ»" << std::endl;
 			m_Exporter.ExecExport();
