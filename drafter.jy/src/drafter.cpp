@@ -1,6 +1,7 @@
 #include "drafter.h"
 #include <iostream>
 #include "Utils.h"
+#include <imgui/imgui_internal.h>
 
 namespace drafter {
 	Drafter::Drafter()
@@ -13,9 +14,15 @@ namespace drafter {
 
 	void Drafter::OnImGuiRender()
 	{
-		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()); // Dock模式
-        ImGui::Begin(u8"剪映字幕处理工具");
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar;
+		window_flags |= ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoResize;
 
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()); // Dock模式
+		//ImGuiID dockspaceID = ImGui::GetID(ID().c_str());
+        ImGui::Begin(u8"剪映字幕处理工具", NULL, window_flags);
+		//ImGuiDockNode* Node = ImGui::DockBuilderGetNode(ImGui::GetHoveredID());
+		//Node->LocalFlags |= ImGuiDockNodeFlags_NoWindowMenuButton | ImGuiDockNodeFlags_NoCloseButton;
 		ImGui::Text(u8"注意事项");
 		ImGui::SameLine();
 		ImGui::Text(u8"     系统时间:");
@@ -114,11 +121,16 @@ namespace drafter {
 
 		static std::vector<std::string> logs;
 		logs = m_Exporter.GetLogs();
-		ImGui::Text(u8"输出");
-		for (int i = logs.size() - 1; i >= 0; i--)
-		{
-			ImGui::BulletText(logs[i].c_str());
+		ImGui::Text(u8"日志");
+		ImGui::BeginChild("Log");
+			// Multiple calls to Text(), not clipped (slow)
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		for (int i = logs.size() - 1; i >= 0; i--) {
+			ImGui::Text(logs[i].c_str());
 		}
+		ImGui::PopStyleVar();
+		ImGui::EndChild();
+		
 
 		
 

@@ -9,6 +9,7 @@
 #include <tchar.h>
 
 #include "drafter.h"
+#include <imgui/imgui_internal.h>
 
 // Data
 static ID3D11Device* g_pd3dDevice = NULL;
@@ -30,7 +31,7 @@ int main(int, char**)
     //ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, _T("工具"), NULL };
     ::RegisterClassEx(&wc);
-    HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("剪映字幕处理工具"), WS_OVERLAPPEDWINDOW, 0, 0, 360, 640, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("剪映字幕处理工具 v-1.0"), WS_OVERLAPPEDWINDOW, 0, 0, 360, 640, NULL, NULL, wc.hInstance, NULL);
 
     // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd))
@@ -59,7 +60,6 @@ int main(int, char**)
     //io.ConfigDockingTransparentPayload = true;
     //io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
     //io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
-
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     io.Fonts->AddFontFromFileTTF("c:/windows/fonts/simhei.ttf", 15.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
