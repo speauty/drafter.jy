@@ -29,22 +29,24 @@ namespace drafter {
 		ImGui::SameLine();
 		ImGui::Text(GenCurrentDateTime().c_str());
 		ImGui::BulletText(u8"路径采用绝对路径，不要包含中文字符！！！");
+		ImGui::BulletText(u8"仅支持与剪映安装路径同级的草稿路径！！！");
+		ImGui::BulletText(u8"这里的草稿路径指JianyingPro Drafts！！！");
 
 		ImGui::Spacing();
 		ImGui::Separator();
 		ImGui::Spacing();
-
+		static std::vector<std::string> files;
+		static const char* items[] = {u8"暂无剪映源"};
 		if (ImGui::Button(u8"自动探测剪映源件")) {
-			
+			files = GetJYInstallDir();
+			for (size_t i = 0; i < files.size() && i < 16; i++) {
+				items[i] = files[i].c_str();
+			}
 		}
-		ImGui::SameLine();
-		ImGui::Text(u8"该功能暂未实现");
 
-
-		const char* items[] = {u8"暂无剪映源", u8"测试数据方式发回来发哈JFK"};
-		static int item_current = 0;
-		if (ImGui::Combo(u8"剪映源", &item_current, items, IM_ARRAYSIZE(items), 3) && item_current > 0){
-			strcpy_s(m_Paths[0], items[item_current]);
+		static int itemCurrent = 0;
+		if (ImGui::Combo(u8"剪映源", &itemCurrent, items, IM_ARRAYSIZE(items), 3)) {
+			strcpy_s(m_Paths[0], items[itemCurrent]);
 			m_Exporter.SetSourceFilePath(std::string(m_Paths[0]));
 		}
 
@@ -123,11 +125,12 @@ namespace drafter {
 		logs = m_Exporter.GetLogs();
 		ImGui::Text(u8"日志");
 		ImGui::BeginChild("Log");
-			// Multiple calls to Text(), not clipped (slow)
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		ImGuiTextBuffer log;
 		for (int i = logs.size() - 1; i >= 0; i--) {
-			ImGui::Text(logs[i].c_str());
+			log.appendf("%-2d %s\n", i+1, logs[i].c_str());
 		}
+		ImGui::TextUnformatted(log.begin(), log.end());
 		ImGui::PopStyleVar();
 		ImGui::EndChild();
 		

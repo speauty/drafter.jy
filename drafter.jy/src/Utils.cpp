@@ -1,4 +1,7 @@
 #include "Utils.h"
+#include <wtypes.h>
+#include <tchar.h>
+#include "io.h"
 
 void MicroS2Str(std::string& msFmtStr, unsigned int microSeconds)
 {
@@ -54,4 +57,55 @@ std::string GenCurrentDateTime()
 	strftime(buff, 64, "%Y-%m-%d %H:%M:%S", &tmp);
 
 	return std::string(buff);
+}
+
+std::vector<std::string> GetJYInstallDir()
+{
+	std::vector<std::string> files;
+	HKEY hKEY;
+	LPCTSTR subKey = TEXT("SOFTWARE\\Bytedance\\JianyingPro");
+	// HKEY_CURRENT_USER\SOFTWARE\Bytedance\JianyingPro
+	//访问注册表，hKEY则保存此函数所打开的键的句柄
+	long ret0 = RegOpenKeyEx(HKEY_CURRENT_USER, subKey, 0, KEY_READ, &hKEY);
+	if (ret0 != ERROR_SUCCESS)//如果无法打开hKEY,打开指定注册表失败，则中止程序的执行，
+	{
+		std::cout << "打开注册表异常 " << subKey << std::endl;
+		return files;
+	}
+	//查询有关的数据
+	TCHAR addrGet[256] = {0};
+	DWORD dataType = REG_SZ;//定义数据类型
+	DWORD dataLen = sizeof(addrGet);//定义数据长度
+	long res = RegQueryValueEx(hKEY, TEXT("installDir"), NULL, &dataType, (LPBYTE)&addrGet, &dataLen);
+	if (res != ERROR_SUCCESS)
+	{
+		std::cout << "查询值异常 installDir" << std::endl;
+		return files;
+	}
+	char tmp[512] = {};
+	sprintf_s(tmp, dataLen, "%ls", addrGet);
+	
+	RegCloseKey(hKEY);
+	std::string path(tmp);
+	path += "..\\JianyingPro Drafts";
+
+	intptr_t  hFile = 0;
+	_finddata_t fileinfo;//用来存储文件信息的结构体   
+	std::string tmpPath;
+	struct stat tmpStat;
+
+	if ((hFile = _findfirst(tmpPath.assign(path).append("\\*").c_str(), &fileinfo)) != -1) {
+		do {
+			if ((fileinfo.attrib & _A_SUBDIR)) {
+				if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0) {
+					if (stat(tmpPath.assign(path).append("\\").append(fileinfo.name).append("\\").append("draft_content.json").c_str(), &tmpStat) == 0) {
+						files.push_back(tmpPath.assign(path).append("\\").append(fileinfo.name).append("\\").append("draft_content.json"));  // 存入目录
+					}
+				}
+			}
+		} while (_findnext(hFile, &fileinfo) == 0);
+		_findclose(hFile); //结束查找  
+	}
+
+	return files;
 }
