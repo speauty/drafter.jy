@@ -13,6 +13,7 @@ private:
 	std::string m_TargetFilePath;
 	std::string m_TargetExt;
 	unsigned int m_BlockCount;
+
 	bool m_FlagHasTimeCode;
 	bool m_FlagTargetFileReflush;
 	bool m_FlagTargetFileForceOverride;
@@ -35,8 +36,10 @@ public:
 	void SetFlagHasTimeCode(bool flag);
 	void SetTargetExt(const std::string& ext);
 	void SetFlagTargetFileForceOverride(bool flag);
+
 	void ResetSubtitle();
 	void ResetLogs();
+
 	void Validate();
 	void DelTargetFile();
 	bool ExecExport();

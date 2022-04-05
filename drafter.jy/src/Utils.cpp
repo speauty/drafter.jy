@@ -97,12 +97,11 @@ std::vector<std::string> GetJYInstallDir()
 	if ((hFile = _findfirst(tmpPath.assign(path).append("\\*").c_str(), &fileinfo)) != -1) {
 		do {
 			if ((fileinfo.attrib & _A_SUBDIR)) {
-				if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0) {
-					if (stat(tmpPath.assign(path).append("\\").append(fileinfo.name).append("\\").append("draft_content.json").c_str(), &tmpStat) == 0) {
-						files.push_back(tmpPath.assign(path).append("\\").append(fileinfo.name).append("\\").append("draft_content.json"));  // 存入目录
-					}
+				if (stat(tmpPath.assign(path).append("\\").append(fileinfo.name).append("\\").append("draft_content.json").c_str(), &tmpStat) == 0) {
+					files.push_back(tmpPath.assign(path).append("\\").append(fileinfo.name).append("\\").append("draft_content.json"));  // 存入目录
 				}
 			}
+			
 		} while (_findnext(hFile, &fileinfo) == 0);
 		_findclose(hFile); //结束查找  
 	}

@@ -3,7 +3,7 @@
 std::string tmpStr = "";
 
 Exporter::Exporter()
-	:m_SourceFilePath(""), m_TargetFilePath(""), m_FlagHasTimeCode(true), m_BlockCount(0), m_FlagTargetFileForceOverride(false), m_FlagTargetFileReflush(false), m_FlagIsValidated(false), m_FlagIsAccessed(false), m_TargetExt("srt")
+	:m_SourceFilePath(""), m_TargetFilePath(""), m_FlagHasTimeCode(true), m_BlockCount(0), m_FlagTargetFileForceOverride(true), m_FlagTargetFileReflush(false), m_FlagIsValidated(false), m_FlagIsAccessed(false), m_TargetExt("srt")
 {
 }
 
@@ -23,11 +23,16 @@ Exporter::~Exporter()
 void Exporter::SetSourceFilePath(const std::string& path)
 {
 	m_SourceFilePath = path;
+	m_FlagIsValidated = false;
+	m_FlagIsAccessed = false;
 }
 
 void Exporter::SetTargetFilePath(const std::string& path)
 {
 	m_TargetFilePath = path;
+	m_FlagIsValidated = false;
+	m_FlagIsAccessed = false;
+	ResetSubtitle();
 }
 
 void Exporter::SetFlagHasTimeCode(bool flag)
@@ -113,17 +118,16 @@ void Exporter::DelTargetFile()
 
 bool Exporter::ExecExport()
 {
+	if (m_Subtitle.empty()) {
+		m_Logs.push_back(GenCurrentDateTime() + u8" 暂无生成字幕");
+		return false;
+	}
+
 	std::ofstream target;
 	std::string targetFile = GetTargetFilePath();
 	target.open(targetFile, std::ios::out|std::ios::trunc);
 	if (!target.is_open()) {
 		m_Logs.push_back(GenCurrentDateTime() + u8" 导出路径打开异常[" + targetFile + "]");
-		target.close();
-		return false;
-	}
-
-	if (m_Subtitle.size() == 0) {
-		m_Logs.push_back(GenCurrentDateTime() + u8" 暂无生成字幕,");
 		target.close();
 		return false;
 	}
@@ -150,6 +154,10 @@ bool Exporter::GenSubtitle()
 		m_Logs.push_back(GenCurrentDateTime() + u8" 未通过检测");
 		m_Logs.push_back(GenCurrentDateTime() + u8" 生成字幕失败");
 		return false;
+	}
+
+	if (!m_Subtitle.empty()) {
+		ResetSubtitle();
 	}
 
 	if (m_JsonData.empty() || !m_JsonData.isMember("materials") || !m_JsonData["materials"].isMember("texts") || !m_JsonData.isMember("tracks")) {

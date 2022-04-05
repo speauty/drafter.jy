@@ -36,16 +36,23 @@ namespace drafter {
 		ImGui::Separator();
 		ImGui::Spacing();
 		static std::vector<std::string> files;
-		static const char* items[] = {u8"暂无剪映源"};
+		static const char* items[10] = { u8"暂无剪映源", "", "", "", "", "", "", "", "", "" };
+		//static const char* tmpStr = u8"暂无剪映源\0";
 		if (ImGui::Button(u8"自动探测剪映源件")) {
 			files = GetJYInstallDir();
-			for (size_t i = 0; i < files.size() && i < 16; i++) {
+			//std::string str;
+			for (size_t i = 0; i < files.size() && i < 10; i++) {
 				items[i] = files[i].c_str();
+				//str += files[i] + "\\0";
 			}
+			//tmpStr = str.c_str();
+			//std::cout << tmpStr << std::endl;
 		}
 
 		static int itemCurrent = 0;
-		if (ImGui::Combo(u8"剪映源", &itemCurrent, items, IM_ARRAYSIZE(items), 3)) {
+		// const char* items_separated_by_zeros
+		if (ImGui::Combo(u8"剪映源", &itemCurrent, items, IM_ARRAYSIZE(items), 3) && items[itemCurrent] != "") {
+		//if (ImGui::Combo(u8"剪映源", &itemCurrent, tmpStr, 3) && items[itemCurrent] != "") {
 			strcpy_s(m_Paths[0], items[itemCurrent]);
 			m_Exporter.SetSourceFilePath(std::string(m_Paths[0]));
 		}
