@@ -1,4 +1,5 @@
 #include "exporter.h"
+#include <locale>
 
 std::string tmpStr = "";
 
@@ -25,6 +26,8 @@ void Exporter::SetSourceFilePath(const std::string& path)
 	m_SourceFilePath = path;
 	m_FlagIsValidated = false;
 	m_FlagIsAccessed = false;
+	Validate();
+	GenSourceVideoPath();
 }
 
 void Exporter::SetTargetFilePath(const std::string& path)
@@ -52,6 +55,12 @@ void Exporter::SetTargetExt(const std::string& ext)
 void Exporter::SetFlagTargetFileForceOverride(bool flag)
 {
 	m_FlagTargetFileForceOverride = flag;
+}
+
+void Exporter::GenSourceVideoPath()
+{
+	m_SourceVideoPath = m_JsonData["materials"]["videos"][0]["path"].asString();
+	m_SourceVideoPath = ReplaceAll(m_SourceVideoPath, "/", "\\");
 }
 
 void Exporter::ResetSubtitle()
@@ -125,10 +134,12 @@ bool Exporter::ExecExport()
 
 	std::ofstream target;
 	std::string targetFile = GetTargetFilePath();
-	target.open(targetFile, std::ios::out|std::ios::trunc);
+	target.open(targetFile, std::ios::out | std::ios::trunc);
 	if (!target.is_open()) {
 		m_Logs.push_back(GenCurrentDateTime() + u8" 导出路径打开异常[" + targetFile + "]");
 		target.close();
+		// _CRT_SECURE_NO_WARNINGS
+		std::cout << "创建导出路径异常: " << errno << "@" << strerror(errno) << std::endl;
 		return false;
 	}
 
@@ -143,6 +154,8 @@ bool Exporter::ExecExport()
 	}
 
 	target.close();
+	//std::locale::global(std::locale(loc));
+
 	m_Logs.push_back(GenCurrentDateTime() + u8" 导出字幕成功[" + targetFile + "]");
 	return true;
 }

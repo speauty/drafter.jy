@@ -45,6 +45,17 @@ void MicroS2Str(std::string& msFmtStr, unsigned int microSeconds)
 	return;
 }
 
+std::string& ReplaceAll(std::string& str, const std::string& old_value, const std::string& new_value)
+{
+	while (true) {
+		std::string::size_type pos(0);
+		if ((pos = str.find(old_value)) != std::string::npos)
+			str.replace(pos, old_value.length(), new_value);
+		else break;
+	}
+	return str;
+}
+
 std::string GenCurrentDateTime()
 {
 	time_t now;
@@ -66,8 +77,8 @@ std::vector<std::string> GetJYInstallDir()
 	LPCTSTR subKey = TEXT("SOFTWARE\\Bytedance\\JianyingPro");
 	// HKEY_CURRENT_USER\SOFTWARE\Bytedance\JianyingPro
 	//访问注册表，hKEY则保存此函数所打开的键的句柄
-	long ret0 = RegOpenKeyEx(HKEY_CURRENT_USER, subKey, 0, KEY_READ, &hKEY);
-	if (ret0 != ERROR_SUCCESS)//如果无法打开hKEY,打开指定注册表失败，则中止程序的执行，
+	long ret = RegOpenKeyEx(HKEY_CURRENT_USER, subKey, 0, KEY_READ, &hKEY);
+	if (ret != ERROR_SUCCESS)//如果无法打开hKEY,打开指定注册表失败，则中止程序的执行，
 	{
 		std::cout << "打开注册表异常 " << subKey << std::endl;
 		return files;

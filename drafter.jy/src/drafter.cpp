@@ -1,5 +1,6 @@
 #include "drafter.h"
 #include <iostream>
+#include <algorithm>
 #include "Utils.h"
 #include <imgui/imgui_internal.h>
 
@@ -28,7 +29,7 @@ namespace drafter {
 		ImGui::Text(u8"     系统时间:");
 		ImGui::SameLine();
 		ImGui::Text(GenCurrentDateTime().c_str());
-		ImGui::BulletText(u8"路径采用绝对路径，不要包含中文字符！！！");
+		ImGui::BulletText(u8"路径采用绝对路径，暂不支持中文字符！！！");
 		ImGui::BulletText(u8"仅支持与剪映安装路径同级的草稿路径！！！");
 		ImGui::BulletText(u8"这里的草稿路径指JianyingPro Drafts！！！");
 
@@ -36,26 +37,27 @@ namespace drafter {
 		ImGui::Separator();
 		ImGui::Spacing();
 		static std::vector<std::string> files;
-		static const char* items[10] = { u8"暂无剪映源", "", "", "", "", "", "", "", "", "" };
-		//static const char* tmpStr = u8"暂无剪映源\0";
+		static const char* items[10] = {u8"暂无剪映源", "", "" , "" , "" , "" , "" , "" , "" , ""};
 		if (ImGui::Button(u8"自动探测剪映源件")) {
 			files = GetJYInstallDir();
-			//std::string str;
 			for (size_t i = 0; i < files.size() && i < 10; i++) {
 				items[i] = files[i].c_str();
-				//str += files[i] + "\\0";
 			}
-			//tmpStr = str.c_str();
-			//std::cout << tmpStr << std::endl;
 		}
 
-		static int itemCurrent = 0;
-		// const char* items_separated_by_zeros
-		if (ImGui::Combo(u8"剪映源", &itemCurrent, items, IM_ARRAYSIZE(items), 3) && items[itemCurrent] != "") {
-		//if (ImGui::Combo(u8"剪映源", &itemCurrent, tmpStr, 3) && items[itemCurrent] != "") {
-			strcpy_s(m_Paths[0], items[itemCurrent]);
-			m_Exporter.SetSourceFilePath(std::string(m_Paths[0]));
+		if (files.size() > 0) {
+			static int itemCurrent = 0;
+			if (ImGui::Combo(u8"选择剪映源", &itemCurrent, items, IM_ARRAYSIZE(items), 3) && items[itemCurrent] != "") {
+				strcpy_s(m_Paths[0], files[itemCurrent].c_str());
+				m_Exporter.SetSourceFilePath(std::string(m_Paths[0]));
+				strcpy_s(m_Paths[1], m_Exporter.GetSourceVideoPath().c_str());
+				m_Exporter.SetTargetFilePath(std::string(m_Paths[1]));
+			}
+			if (items[itemCurrent] == "") {
+				itemCurrent = 0;
+			}
 		}
+		
 
 		if (ImGui::InputTextWithHint(u8"剪映源路径", u8"请输入剪映源路径", m_Paths[0], IM_ARRAYSIZE(m_Paths[0]))) {
 			m_Exporter.SetSourceFilePath(std::string(m_Paths[0]));
@@ -100,16 +102,13 @@ namespace drafter {
 		ImGui::SameLine();
 		if (ImGui::Button(u8"重置")) {
 			m_Exporter.ResetSubtitle();
-			std::cout << "重置" << std::endl;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button(u8"生成")) {
 			m_Exporter.GenSubtitle();
-			std::cout << "生成字幕" << std::endl;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button(u8"导出")) {
-			std::cout << "导出字幕" << std::endl;
 			m_Exporter.ExecExport();
 		}
 

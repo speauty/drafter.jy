@@ -12,6 +12,7 @@ private:
 	std::string m_SourceFilePath;
 	std::string m_TargetFilePath;
 	std::string m_TargetExt;
+	std::string m_SourceVideoPath;
 	unsigned int m_BlockCount;
 
 	bool m_FlagHasTimeCode;
@@ -36,6 +37,7 @@ public:
 	void SetFlagHasTimeCode(bool flag);
 	void SetTargetExt(const std::string& ext);
 	void SetFlagTargetFileForceOverride(bool flag);
+	void GenSourceVideoPath();
 
 	void ResetSubtitle();
 	void ResetLogs();
@@ -60,4 +62,5 @@ public:
 	std::vector<std::string> GetLogs() const { return m_Logs; }
 
 	std::string GetBlockSep() const { return "###########"; }
+	std::string GetSourceVideoPath() const { return m_SourceVideoPath; }
 };
